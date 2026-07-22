@@ -7,28 +7,17 @@ export function Marquee({
   children,
   duration = 40,
   className,
-  pauseOnHover = true,
 }: {
   children: ReactNode;
   duration?: number;
   className?: string;
-  pauseOnHover?: boolean;
 }) {
   return (
     <div
-      className={clsx(
-        "overflow-clip motion-reduce:overflow-x-auto",
-        pauseOnHover && "group",
-        className,
-      )}
+      className={clsx("overflow-clip motion-reduce:overflow-x-auto", className)}
       style={{ "--duration": `${duration}s` } as CSSProperties}
     >
-      <div
-        className={clsx(
-          "flex w-max animate-marquee motion-reduce:animate-none",
-          pauseOnHover && "group-hover:[animation-play-state:paused]",
-        )}
-      >
+      <div className="flex w-max animate-marquee motion-reduce:animate-none">
         <div className="flex shrink-0">{children}</div>
         <div className="flex shrink-0" aria-hidden>
           {children}

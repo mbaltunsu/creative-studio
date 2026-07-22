@@ -1,14 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
+import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { SERVICES } from "@/lib/data/services";
 import { ACCENT_HEX } from "@/lib/data/nav";
 
 export function WhatWeDo() {
   const [active, setActive] = useState(0);
+  const listRef = useRef<HTMLUListElement>(null);
   const activeService = SERVICES[active];
+
+  useGSAP(
+    () => {
+      const items = gsap.utils.toArray<HTMLElement>("li", listRef.current);
+      items.forEach((el, i) => {
+        ScrollTrigger.create({
+          trigger: el,
+          start: "top 55%",
+          // ponytail: last item stays active from its midpoint to the section end
+          end: i === items.length - 1 ? "bottom top" : "bottom 55%",
+          onToggle: (self) => self.isActive && setActive(i),
+        });
+      });
+    },
+    { scope: listRef }
+  );
 
   return (
     <section id="solutions" className="relative isolate bg-ink pb-[100lvh] text-paper">
@@ -23,15 +41,14 @@ export function WhatWeDo() {
 
         <div className="mt-16 grid grid-cols-1 gap-12 md:mt-24 md:grid-cols-2 md:gap-16">
           {/* LEFT — interactive service index */}
-          <ul>
+          <ul ref={listRef}>
             {SERVICES.map((s, i) => {
               const isActive = i === active;
               return (
                 <li key={s.id}>
                   <motion.a
                     href="#work"
-                    className="group flex cursor-pointer flex-col border-b border-paper/10 py-8 md:py-10"
-                    onMouseEnter={() => setActive(i)}
+                    className="group flex min-h-[100lvh] cursor-pointer flex-col justify-center border-b border-paper/10 py-8 md:py-10"
                     onFocus={() => setActive(i)}
                     initial={{ opacity: 0, y: 24 }}
                     whileInView={{ opacity: 1, y: 0 }}
