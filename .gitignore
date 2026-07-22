@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# raw codex image-gen masters (converted to public/images/*.webp; not served)
+/public/images/_raw
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
