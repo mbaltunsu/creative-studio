@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Pixel-squares logo mark (components/ui/logo.tsx) on an ink app tile -->
+  <rect width="64" height="64" rx="14" fill="#0a0a0a"/>
+  <g transform="translate(12 12) scale(1.8182)">
+    <rect x="0" y="0" width="6" height="6" fill="#3b5bff"/>
+    <rect x="8" y="8" width="6" height="6" fill="#ff5a5f"/>
+    <rect x="16" y="8" width="6" height="6" fill="#f7f7f2"/>
+    <rect x="0" y="16" width="6" height="6" fill="#e8ff3d"/>
+    <rect x="16" y="16" width="6" height="6" fill="#9b5cff"/>
+  </g>
+</svg>

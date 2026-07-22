@@ -1,20 +1,46 @@
+import type { CSSProperties } from "react";
 import clsx from "clsx";
 import { Marquee } from "@/components/anim/marquee";
 import { INDUSTRIES, INDUSTRIES_KICKER } from "@/lib/data/industries";
 import type { Accent } from "@/lib/data/nav";
 
-/* accent → tall-capsule palette (typed over every Accent). Accent pills invert
-   to paper on hover; the paper pills (no accent) invert to ink. */
-const ACCENT_PILL: Record<Accent, string> = {
-  blue: "bg-blue text-paper hover:bg-paper hover:text-ink",
-  coral: "bg-coral text-ink hover:bg-paper hover:text-ink",
-  acid: "bg-acid text-ink hover:bg-paper hover:text-ink",
-  violet: "bg-violet text-paper hover:bg-paper hover:text-ink",
-  teal: "bg-teal text-ink hover:bg-paper hover:text-ink",
+/* Ticket-spine cards: vertical book-spine label, index + accent dot on top,
+   perforated 64px stub (sector code + arrow) with notched ticket edges.
+   Accent cards invert to paper on hover; paper cards alternate solid/outline
+   and invert the other way. All pure CSS — this section stays zero-JS. */
+const ACCENT_CARD: Record<Accent, string> = {
+  blue: "border-transparent bg-blue text-paper hover:bg-paper hover:text-ink",
+  coral: "border-transparent bg-coral text-ink hover:bg-paper hover:text-ink",
+  acid: "border-transparent bg-acid text-ink hover:bg-paper hover:text-ink",
+  violet: "border-transparent bg-violet text-paper hover:bg-paper hover:text-ink",
+  teal: "border-transparent bg-teal text-ink hover:bg-paper hover:text-ink",
 };
 
-const PAPER_PILL =
-  "bg-paper text-ink hover:bg-ink hover:text-paper hover:border-paper/30";
+const PAPER_CARD =
+  "border-transparent bg-paper text-ink hover:bg-ink hover:text-paper hover:border-paper/30";
+const OUTLINE_CARD =
+  "border-paper/25 bg-transparent text-paper hover:border-transparent hover:bg-paper hover:text-ink";
+
+/* Half-circle notches cut where the perforation meets the card edges. If a
+   browser skips mask-composite the notches vanish and the card stays whole. */
+const TICKET_MASK: CSSProperties = {
+  WebkitMaskImage:
+    "radial-gradient(circle 10px at 0 calc(100% - 64px), transparent 9px, #000 10px), radial-gradient(circle 10px at 100% calc(100% - 64px), transparent 9px, #000 10px)",
+  WebkitMaskComposite: "source-in",
+  maskImage:
+    "radial-gradient(circle 10px at 0 calc(100% - 64px), transparent 9px, #000 10px), radial-gradient(circle 10px at 100% calc(100% - 64px), transparent 9px, #000 10px)",
+  maskComposite: "intersect",
+};
+
+/* currentColor hatch — follows each variant's text color through hover inverts. */
+const HATCH: CSSProperties = {
+  backgroundImage:
+    "repeating-linear-gradient(45deg, currentColor 0, currentColor 1px, transparent 1px, transparent 10px)",
+};
+
+/* Baseline stagger, cycling every 3 cards (12 % 3 = 0, so the marquee's
+   duplicated copy continues the rhythm seamlessly). */
+const CARD_LIFT = [0, 26, 10];
 
 /* Transform-only motion. A slow full rotation for the conic ring; the centring
    translate lives on the element (margin-auto) so it survives motion-reduce. */
@@ -73,24 +99,63 @@ export function IndustriesMarquee() {
         </h2>
       </div>
 
-      {/* Full-bleed marquee of tall capsule pills. Children are passed ONCE —
+      {/* Full-bleed marquee of ticket-spine cards. Children are passed ONCE —
           Marquee renders them twice internally; space with padding, not gap. */}
       <Marquee duration={45} className="mt-10 pb-28 md:mt-16 md:pb-40">
-        <ul className="flex">
-          {INDUSTRIES.map((pill) => (
-            <li key={pill.label} className="mr-0 shrink-0 pr-4 md:pr-6">
-              <div
-                className={clsx(
-                  "flex h-[min(520px,62vh)] w-[clamp(180px,19vw,264px)] items-center justify-center rounded-full border border-transparent px-6 text-center transition-colors duration-300",
-                  pill.accent ? ACCENT_PILL[pill.accent] : PAPER_PILL,
-                )}
-              >
-                <span className="font-display text-[clamp(1.4rem,2vw,2.2rem)] font-semibold leading-tight">
-                  {pill.label}
-                </span>
-              </div>
-            </li>
-          ))}
+        <ul className="flex items-start">
+          {(() => {
+            let paperCount = 0;
+            return INDUSTRIES.map((card, i) => {
+              const variant = card.accent
+                ? ACCENT_CARD[card.accent]
+                : paperCount++ % 2 === 0
+                  ? PAPER_CARD
+                  : OUTLINE_CARD;
+              return (
+                <li
+                  key={card.label}
+                  className="mr-0 shrink-0 pr-4 md:pr-6"
+                  style={{ marginTop: CARD_LIFT[i % 3] }}
+                >
+                  <div
+                    className={clsx(
+                      "group/card relative isolate flex h-[min(520px,62vh)] w-[clamp(210px,20vw,272px)] flex-col overflow-hidden rounded-[20px] border transition-colors duration-300",
+                      variant,
+                    )}
+                    style={TICKET_MASK}
+                  >
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute inset-0 -z-10 opacity-[0.06]"
+                      style={HATCH}
+                    />
+                    <div className="flex items-center justify-between px-5 pt-5 font-mono text-[11px] font-bold tracking-[0.18em]">
+                      <span className="opacity-70">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span aria-hidden className="size-1.5 rounded-full bg-current" />
+                    </div>
+                    <div className="flex min-h-0 flex-1 items-end justify-center px-4 py-4">
+                      <span className="rotate-180 font-display text-[clamp(1.7rem,1.9vw,2.4rem)] font-semibold leading-[1.04] tracking-tight [writing-mode:vertical-rl]">
+                        {card.label}
+                      </span>
+                    </div>
+                    <div className="flex h-16 w-full items-center justify-between border-t border-dashed px-5 [border-color:color-mix(in_srgb,currentColor_35%,transparent)]">
+                      <span className="font-mono text-xs font-bold tracking-[0.22em]">
+                        {card.code}
+                      </span>
+                      <span
+                        aria-hidden
+                        className="font-mono text-base transition-transform duration-300 group-hover/card:-translate-y-0.5 group-hover/card:translate-x-0.5"
+                      >
+                        ↗
+                      </span>
+                    </div>
+                  </div>
+                </li>
+              );
+            });
+          })()}
         </ul>
       </Marquee>
     </section>

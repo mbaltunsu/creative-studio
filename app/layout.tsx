@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Bricolage_Grotesque, Archivo, Space_Mono } from "next/font/google";
 import { MotionConfig } from "motion/react";
 import { SmoothScroll } from "@/components/providers/smooth-scroll";
+import { CookieConsent } from "@/components/ui/cookie-consent";
 import "./globals.css";
 
 const bricolage = Bricolage_Grotesque({
@@ -39,6 +40,7 @@ export default function RootLayout({
       <body>
         <MotionConfig reducedMotion="user">
           <SmoothScroll>{children}</SmoothScroll>
+          <CookieConsent />
         </MotionConfig>
       </body>
     </html>

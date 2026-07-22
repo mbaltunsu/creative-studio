@@ -85,7 +85,8 @@ export function MosaicReel() {
       };
 
       mm.add(`${MM.desktop} and ${MM.motionOK}`, () => build(400, 1));
-      mm.add(`${MM.mobile} and ${MM.motionOK}`, () => build(300, 0.6));
+      /* Short mobile scrub — 300% took 3-4 full swipes to clear the pin. */
+      mm.add(`${MM.mobile} and ${MM.motionOK}`, () => build(150, 0.6));
     },
     { scope: ref },
   );

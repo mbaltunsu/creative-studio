@@ -1,8 +1,10 @@
 "use client";
 
 /* Vendored from 21st.dev "icey-night-shards" (Shader Builder recipe) — WebGL1,
-   zero dependencies. Recolored via props for our palette; pointer push effect
-   (dormant in the original) is wired to real mouse input here. */
+   zero dependencies. Recolored via props for our palette. Pointer input drives
+   cursorEffect 4: a noise-wobbled circular "mono lens" that re-renders the
+   field as black/white (bright crests → white, dark troughs → black) without
+   displacing the pattern itself. */
 
 import { useEffect, useRef } from "react";
 
@@ -192,6 +194,15 @@ void main() {
         float ripple = sin(
           cursorDistance / max(u_cursorRadius, 0.001) * 18.0 - u_time * 5.0);
         p -= cursorDirection * ripple * cursorMask * u_cursorStrength * 0.07;
+      } else {
+        /* 4: mono lens — recompute the mask with an fbm-wobbled boundary so
+           the circle reads organic, plus a slight inward refraction. */
+        float wobble = (fbm(cursorDelta * 5.5 + u_time * 0.5) - 0.5)
+          * u_cursorRadius;
+        float wobbled = cursorDistance + wobble * 0.45;
+        cursorMask = u_cursorPresence
+          * (1.0 - smoothstep(u_cursorRadius * 0.82, u_cursorRadius, wobbled));
+        p -= cursorDirection * cursorMask * u_cursorStrength * 0.1;
       }
     }
   }
@@ -223,6 +234,9 @@ void main() {
   } else {
     col = shade(uv, p, u_time);
   }
+  /* Raw palette luminance, captured before brightness/vignette crush the
+     range — the mono lens keys off this so it stays legible everywhere. */
+  float monoSrc = dot(col, vec3(0.299, 0.587, 0.114));
   if (abs(u_contrast - 1.0) > 0.0001)
     col = (col - 0.5) * u_contrast + 0.5;
   if (abs(u_saturation - 1.0) > 0.0001) {
@@ -237,8 +251,14 @@ void main() {
     float vd = length(screenUv - 0.5) * 1.41421356;
     col *= 1.0 - u_vignette * smoothstep(0.35, 1.0, vd);
   }
-  if (u_cursorPresence > 0.001 && u_cursorEffect > 3.5)
-    col += (vec3(0.18) + col * 0.12) * cursorMask * u_cursorStrength;
+  if (u_cursorPresence > 0.001 && u_cursorEffect > 3.5 && cursorMask > 0.001) {
+    /* Mono lens fill: same field, remapped to B/W. Window sits between the
+       dark-navy troughs (~0.05) and the blue/violet/teal crests (~0.4+), so
+       light blues land white, dark blues land black, with a short gradient
+       between so the pattern stays visible (never flat). */
+    vec3 mono = vec3(smoothstep(0.09, 0.36, monoSrc));
+    col = mix(col, mono, cursorMask);
+  }
   if (u_grain > 0.0001)
     col += (grainHash(
       gl_FragCoord.xy + vec2(u_seed * 17.0, u_seed * 31.0)) - 0.5) * u_grain;
@@ -268,7 +288,7 @@ export interface ShaderParams {
   drift: number;
   oklab: number;
   timeScale: number;
-  /* pointer push (cursorEffect 0) */
+  /* mono-lens refraction amount (cursorEffect 4) */
   cursorStrength: number;
 }
 
@@ -373,7 +393,7 @@ export function ShaderBackground({
     gl.uniform4f(u.surface, P.detail, P.contrast, P.brightness, P.saturation);
     gl.uniform4f(u.finish, P.hue, P.vignette, P.blur, P.grain);
     gl.uniform4f(u.transform, P.seed, P.rotate, P.drift, P.oklab);
-    gl.uniform4f(u.cursor, 0, 0, P.cursorStrength, 0.297);
+    gl.uniform4f(u.cursor, 0, 4, P.cursorStrength, 0.297);
 
     /* Pointer push: targets fed by pointermove, smoothed in the render loop.
        z = presence (0..1), eased in/out on enter/leave. */
@@ -479,7 +499,7 @@ export function ShaderBackground({
         colorCount,
       );
       gl.uniform4f(u.space, 0, 0, smoothX, smoothY);
-      gl.uniform4f(u.cursor, smoothZ, 0, paramsRef.current.cursorStrength, 0.297);
+      gl.uniform4f(u.cursor, smoothZ, 4, paramsRef.current.cursorStrength, 0.297);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       const stillLerping =
         Math.abs(targetX - smoothX) > 0.001 ||

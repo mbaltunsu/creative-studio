@@ -32,6 +32,11 @@ export function Navbar() {
   useEffect(() => {
     const nav = ref.current;
     if (!nav) return;
+    /* Top-level paper sections wash out the 35% glass — deepen it while the
+       bar overlaps one (see .nav-over-paper in globals.css). */
+    const paperSections = Array.from(
+      document.querySelectorAll<HTMLElement>("main > section.bg-paper"),
+    );
     let lastY = window.scrollY;
     let anchor = lastY;
     let dir = 0;
@@ -43,6 +48,13 @@ export function Navbar() {
       if (h) setMegaOpen(false);
     };
     const onScroll = () => {
+      nav.classList.toggle(
+        "nav-over-paper",
+        paperSections.some((s) => {
+          const r = s.getBoundingClientRect();
+          return r.top < 72 && r.bottom > 0;
+        }),
+      );
       const y = window.scrollY;
       const d = y > lastY ? 1 : y < lastY ? -1 : 0;
       if (d !== 0 && d !== dir) {
@@ -58,6 +70,7 @@ export function Navbar() {
       if (dir === -1 && anchor - y > 24) setHidden(false);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
@@ -96,10 +109,10 @@ export function Navbar() {
       <header ref={ref} className="site-nav fixed inset-x-0 top-0 z-50">
         <div
           className={clsx(
-            "relative border-b transition-colors duration-300",
+            "nav-veil relative border-b transition-colors duration-300",
             megaOpen
               ? "border-paper/10 bg-ink"
-              : "border-paper/5 bg-ink/70 backdrop-blur-xl",
+              : "border-paper/15 bg-ink/35 backdrop-blur-[20px]",
           )}
         >
           <div className="mx-auto grid h-16 max-w-[90rem] grid-cols-[1fr_auto_1fr] items-center px-5 md:h-[72px] md:px-10">

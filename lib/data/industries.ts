@@ -4,20 +4,21 @@ export const INDUSTRIES_KICKER = "{ experience across different fields }";
 
 export interface IndustryPill {
   label: string;
-  accent?: Accent; // undefined → paper pill
+  code: string; // 3-letter sector code shown on the card stub
+  accent?: Accent; // undefined → paper card
 }
 
 export const INDUSTRIES: IndustryPill[] = [
-  { label: "Technology" },
-  { label: "Automotive", accent: "blue" },
-  { label: "Construction" },
-  { label: "Product Design" },
-  { label: "Fashion", accent: "coral" },
-  { label: "Consumer Devices" },
-  { label: "E-commerce", accent: "acid" },
-  { label: "Architecture" },
-  { label: "Media & Publishing", accent: "violet" },
-  { label: "Hospitality" },
-  { label: "Energy", accent: "teal" },
-  { label: "Real Estate" },
+  { label: "Technology", code: "TEC" },
+  { label: "Automotive", code: "AUT", accent: "blue" },
+  { label: "Construction", code: "CON" },
+  { label: "Product Design", code: "PRD" },
+  { label: "Fashion", code: "FSH", accent: "coral" },
+  { label: "Consumer Devices", code: "DEV" },
+  { label: "E-commerce", code: "ECO", accent: "acid" },
+  { label: "Architecture", code: "ARC" },
+  { label: "Media & Publishing", code: "MED", accent: "violet" },
+  { label: "Hospitality", code: "HSP" },
+  { label: "Energy", code: "NRG", accent: "teal" },
+  { label: "Real Estate", code: "RLE" },
 ];

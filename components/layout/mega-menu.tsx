@@ -22,9 +22,10 @@ export function MegaMenu({
       transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
       onPointerEnter={onPointerEnter}
       onPointerLeave={onPointerLeave}
-      className="absolute inset-x-0 top-full hidden border-b border-paper/10 bg-ink md:block"
+      data-lenis-prevent
+      className="absolute inset-x-0 top-full hidden max-h-[calc(100dvh-96px)] overflow-y-auto border-b border-paper/10 bg-ink md:block"
     >
-      <div className="mx-auto grid max-w-[90rem] grid-cols-3 gap-x-6 gap-y-10 px-6 py-10 md:px-10">
+      <div className="mx-auto grid max-w-[90rem] grid-cols-3 gap-x-5 gap-y-6 px-6 py-6 md:px-10">
         {SOLUTIONS.map((s, i) => (
           <motion.a
             key={s.label}
@@ -35,7 +36,7 @@ export function MegaMenu({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, delay: 0.05 + i * 0.04, ease: [0.32, 0.72, 0, 1] }}
           >
-            <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-ink-soft">
+            <div className="relative aspect-[12/5] overflow-hidden rounded-xl bg-ink-soft">
               <Image
                 src={s.image}
                 alt=""
@@ -50,8 +51,8 @@ export function MegaMenu({
                 {String(i + 1).padStart(2, "0")}
               </span>
             </div>
-            <div className="mt-3 flex items-baseline justify-between gap-3">
-              <h3 className="font-display text-lg font-semibold tracking-tight text-paper md:text-xl">
+            <div className="mt-2.5 flex items-baseline justify-between gap-3">
+              <h3 className="font-display text-base font-semibold tracking-tight text-paper md:text-lg">
                 {s.label}
               </h3>
               <span
@@ -62,7 +63,7 @@ export function MegaMenu({
                 ↗
               </span>
             </div>
-            <p className="mt-1 font-sans text-sm text-paper/50">{s.blurb}</p>
+            <p className="mt-0.5 font-sans text-[13px] leading-snug text-paper/50">{s.blurb}</p>
           </motion.a>
         ))}
       </div>

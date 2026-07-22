@@ -78,3 +78,8 @@ body {
 .site-nav.nav-hidden {
   transform: translateY(-100%);
 }
+/* Paper sections under the 35% glass would wash out the paper-colored nav
+   text — deepen the same glass instead of recoloring every link. */
+.site-nav.nav-over-paper .nav-veil {
+  background-color: rgba(10, 10, 10, 0.82);
+}
