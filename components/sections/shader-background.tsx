@@ -195,13 +195,15 @@ void main() {
           cursorDistance / max(u_cursorRadius, 0.001) * 18.0 - u_time * 5.0);
         p -= cursorDirection * ripple * cursorMask * u_cursorStrength * 0.07;
       } else {
-        /* 4: mono lens — recompute the mask with an fbm-wobbled boundary so
-           the circle reads organic, plus a slight inward refraction. */
+        /* 4: mono lens — fbm-wobbled boundary so the circle reads organic,
+           plus a slight inward refraction. Falloff band (0.45..1.0 of
+           radius) matches a reference cursor-reveal effect's inner/outer
+           ratio (~0.44) — wide and gradual rather than a hard-edged disc. */
         float wobble = (fbm(cursorDelta * 5.5 + u_time * 0.5) - 0.5)
           * u_cursorRadius;
         float wobbled = cursorDistance + wobble * 0.45;
         cursorMask = u_cursorPresence
-          * (1.0 - smoothstep(u_cursorRadius * 0.82, u_cursorRadius, wobbled));
+          * (1.0 - smoothstep(u_cursorRadius * 0.45, u_cursorRadius, wobbled));
         p -= cursorDirection * cursorMask * u_cursorStrength * 0.1;
       }
     }
@@ -257,7 +259,9 @@ void main() {
        light blues land white, dark blues land black, with a short gradient
        between so the pattern stays visible (never flat). */
     vec3 mono = vec3(smoothstep(0.09, 0.36, monoSrc));
-    col = mix(col, mono, cursorMask);
+    /* Cap blend short of 1.0 (reference strength ~0.7-0.75) so a hint of
+       the original color survives even at the cursor's dead center. */
+    col = mix(col, mono, cursorMask * 0.76);
   }
   if (u_grain > 0.0001)
     col += (grainHash(
@@ -314,7 +318,7 @@ export const DEFAULT_SHADER_PARAMS: ShaderParams = {
   drift: 0.156,
   oklab: 0,
   timeScale: 0.86,
-  cursorStrength: 0.5,
+  cursorStrength: 0.3,
 };
 
 const pendingCleanup = new WeakMap<HTMLCanvasElement, number>();
@@ -393,7 +397,7 @@ export function ShaderBackground({
     gl.uniform4f(u.surface, P.detail, P.contrast, P.brightness, P.saturation);
     gl.uniform4f(u.finish, P.hue, P.vignette, P.blur, P.grain);
     gl.uniform4f(u.transform, P.seed, P.rotate, P.drift, P.oklab);
-    gl.uniform4f(u.cursor, 0, 4, P.cursorStrength, 0.297);
+    gl.uniform4f(u.cursor, 0, 4, P.cursorStrength, 0.09);
 
     /* Pointer push: targets fed by pointermove, smoothed in the render loop.
        z = presence (0..1), eased in/out on enter/leave. */
@@ -499,7 +503,7 @@ export function ShaderBackground({
         colorCount,
       );
       gl.uniform4f(u.space, 0, 0, smoothX, smoothY);
-      gl.uniform4f(u.cursor, smoothZ, 4, paramsRef.current.cursorStrength, 0.297);
+      gl.uniform4f(u.cursor, smoothZ, 4, paramsRef.current.cursorStrength, 0.09);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       const stillLerping =
         Math.abs(targetX - smoothX) > 0.001 ||
