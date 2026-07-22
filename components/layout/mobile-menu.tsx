@@ -81,6 +81,7 @@ export function MobileMenu({ onClose }: { onClose: () => void }) {
           </a>
           <a
             href="#contact"
+            data-quote
             onClick={onClose}
             className="rounded-xl bg-acid px-5 py-3 font-mono text-sm font-bold uppercase tracking-wide text-ink"
           >

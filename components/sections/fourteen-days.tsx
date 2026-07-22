@@ -74,6 +74,7 @@ export function FourteenDays() {
           <div className="mt-8">
             <CtaPill
               href="#contact"
+              quote
               className="font-mono text-sm font-bold uppercase tracking-wider text-paper"
               fillClassName="bg-teal"
             >

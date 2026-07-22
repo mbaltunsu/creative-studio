@@ -3,6 +3,7 @@ import { Bricolage_Grotesque, Archivo, Space_Mono } from "next/font/google";
 import { MotionConfig } from "motion/react";
 import { SmoothScroll } from "@/components/providers/smooth-scroll";
 import { CookieConsent } from "@/components/ui/cookie-consent";
+import { QuoteModal } from "@/components/layout/quote-modal";
 import "./globals.css";
 
 const bricolage = Bricolage_Grotesque({
@@ -41,6 +42,7 @@ export default function RootLayout({
         <MotionConfig reducedMotion="user">
           <SmoothScroll>{children}</SmoothScroll>
           <CookieConsent />
+          <QuoteModal />
         </MotionConfig>
       </body>
     </html>

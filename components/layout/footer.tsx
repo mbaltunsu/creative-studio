@@ -238,6 +238,7 @@ export function Footer() {
             <div className="flex justify-center lg:col-span-2">
               <CtaPill
                 href="#contact"
+                quote
                 className="font-display text-2xl text-paper md:text-5xl"
                 fillClassName="bg-acid"
               >

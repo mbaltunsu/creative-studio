@@ -11,6 +11,7 @@ export function CtaPill({
   fillClassName = "bg-acid",
   hoverTextClassName = "group-hover/pill:text-ink",
   arrow = true,
+  quote = false,
 }: {
   children: ReactNode;
   href?: string;
@@ -18,10 +19,14 @@ export function CtaPill({
   fillClassName?: string;
   hoverTextClassName?: string;
   arrow?: boolean;
+  /** Opens the quote modal via its delegated a[data-quote] listener;
+      href stays as the no-JS fallback. */
+  quote?: boolean;
 }) {
   return (
     <a
       href={href}
+      data-quote={quote || undefined}
       className={clsx(
         "group/pill relative inline-flex items-center gap-[0.5em] overflow-hidden whitespace-nowrap rounded-full border border-current px-[1.2em] py-[0.55em]",
         className,

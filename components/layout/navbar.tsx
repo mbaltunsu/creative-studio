@@ -166,6 +166,7 @@ export function Navbar() {
               </a>
               <a
                 href="#contact"
+                data-quote
                 className="hidden rounded-xl bg-acid px-4 py-2.5 font-mono text-[13px] font-bold uppercase tracking-[0.08em] text-ink transition-transform duration-200 hover:scale-[1.03] md:block"
               >
                 Get a quote <span aria-hidden>→</span>

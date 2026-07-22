@@ -117,6 +117,7 @@ export function ProjectPath() {
                 <div className="flex items-start justify-start md:col-span-3 md:items-end md:justify-end">
                   <CtaPill
                     href="#contact"
+                    quote
                     className="font-mono text-xs uppercase tracking-wider text-paper md:text-sm"
                     fillClassName={FILL_BG[card.accent]}
                     hoverTextClassName={FILL_TEXT[card.accent]}
