@@ -101,7 +101,7 @@ export function IndustriesMarquee() {
 
       {/* Full-bleed marquee of ticket-spine cards. Children are passed ONCE —
           Marquee renders them twice internally; space with padding, not gap. */}
-      <Marquee duration={45} className="mt-10 pb-28 md:mt-16 md:pb-40">
+      <Marquee duration={45} pauseOnHover={false} className="mt-10 pb-28 md:mt-16 md:pb-40">
         <ul className="flex items-start">
           {(() => {
             let paperCount = 0;
