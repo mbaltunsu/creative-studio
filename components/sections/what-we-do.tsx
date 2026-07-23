@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
+import { MM } from "@/lib/motion-tokens";
 import { SERVICES } from "@/lib/data/services";
 import { ACCENT_HEX } from "@/lib/data/nav";
 
@@ -14,14 +15,50 @@ export function WhatWeDo() {
 
   useGSAP(
     () => {
-      const items = gsap.utils.toArray<HTMLElement>("li", listRef.current);
-      items.forEach((el, i) => {
-        ScrollTrigger.create({
-          trigger: el,
-          start: "top 55%",
-          // ponytail: last item stays active from its midpoint to the section end
-          end: i === items.length - 1 ? "bottom top" : "bottom 55%",
-          onToggle: (self) => self.isActive && setActive(i),
+      const list = listRef.current!;
+      const grid = list.parentElement as HTMLElement;
+      const items = gsap.utils.toArray<HTMLElement>("li", list);
+      const mm = gsap.matchMedia();
+
+      // ponytail: pin the grid one viewport tall and scrub the list through it
+      // at half scroll speed — 2x scroll length with zero layout change.
+      mm.add(MM.motionOK, () => {
+        // item 01 is already active during the approach scroll, so it only
+        // gets a quarter viewport of pinned time; the rest get a full one.
+        const FIRST_SLICE = 0.25;
+        const slices = items.length - 1 + FIRST_SLICE;
+        const dist = () => list.scrollHeight - grid.clientHeight;
+        gsap.set(grid, { height: "100svh", overflow: "hidden" });
+        gsap.to(list, {
+          y: () => -dist(),
+          ease: "none",
+          scrollTrigger: {
+            trigger: grid,
+            start: "top top",
+            // half a viewport of scroll per service (2x speed)
+            end: () => `+=${slices * grid.clientHeight * 0.5}`,
+            pin: true,
+            scrub: true,
+            invalidateOnRefresh: true,
+            onUpdate: (self) => {
+              const s = self.progress * slices;
+              setActive(
+                Math.min(items.length - 1, Math.floor(s + 1 - FIRST_SLICE))
+              );
+            },
+          },
+        });
+      });
+
+      // Reduced motion: no pin — activate items as they cross mid-viewport.
+      mm.add(MM.reduce, () => {
+        items.forEach((el, i) => {
+          ScrollTrigger.create({
+            trigger: el,
+            start: "top 55%",
+            end: i === items.length - 1 ? "bottom top" : "bottom 55%",
+            onToggle: (self) => self.isActive && setActive(i),
+          });
         });
       });
     },
@@ -48,7 +85,7 @@ export function WhatWeDo() {
                 <li key={s.id}>
                   <motion.a
                     href="#work"
-                    className="group flex min-h-[100lvh] cursor-pointer flex-col justify-center border-b border-paper/10 py-8 md:py-10"
+                    className="group flex cursor-pointer flex-col border-b border-paper/10 py-8 md:py-10"
                     onFocus={() => setActive(i)}
                     initial={{ opacity: 0, y: 24 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -66,33 +103,38 @@ export function WhatWeDo() {
                       />
                     </div>
 
-                    <div className="flex items-baseline gap-4">
-                      <span
-                        className="font-mono text-sm"
-                        style={{ color: ACCENT_HEX[s.accent] }}
-                      >
-                        {s.index}
-                      </span>
-                      <h3
-                        className="font-display text-3xl font-semibold tracking-tight transition-transform group-hover:translate-x-2 md:text-5xl"
-                        style={isActive ? { color: ACCENT_HEX[s.accent] } : undefined}
-                      >
-                        {s.title}
-                      </h3>
-                    </div>
-
-                    <p className="mt-3 max-w-[52ch] font-sans text-paper/55">{s.description}</p>
-
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {s.deliverables.map((d) => (
+                    <div
+                      className="transition-opacity duration-300"
+                      style={{ opacity: isActive ? 1 : 0.35 }}
+                    >
+                      <div className="flex items-baseline gap-4">
                         <span
-                          key={d}
-                          className="rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-paper/60"
-                          style={{ borderColor: `${ACCENT_HEX[s.accent]}55` }}
+                          className="font-mono text-sm"
+                          style={{ color: ACCENT_HEX[s.accent] }}
                         >
-                          {d}
+                          {s.index}
                         </span>
-                      ))}
+                        <h3
+                          className="font-display text-3xl font-semibold tracking-tight transition-transform group-hover:translate-x-2 md:text-5xl"
+                          style={isActive ? { color: ACCENT_HEX[s.accent] } : undefined}
+                        >
+                          {s.title}
+                        </h3>
+                      </div>
+
+                      <p className="mt-3 max-w-[52ch] font-sans text-paper/55">{s.description}</p>
+
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {s.deliverables.map((d) => (
+                          <span
+                            key={d}
+                            className="rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-paper/60"
+                            style={{ borderColor: `${ACCENT_HEX[s.accent]}55` }}
+                          >
+                            {d}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </motion.a>
                 </li>
@@ -101,8 +143,8 @@ export function WhatWeDo() {
           </ul>
 
           {/* RIGHT — sticky preview (desktop only) */}
-          <div className="hidden md:block">
-            <div className="sticky top-28 aspect-[4/5] overflow-hidden rounded-xl bg-ink-soft">
+          <div className="hidden md:block md:pt-28">
+            <div className="sticky top-28 aspect-[4/5] max-h-[calc(100svh-14rem)] overflow-hidden rounded-xl bg-ink-soft">
               <AnimatePresence>
                 <motion.div
                   key={activeService.id}

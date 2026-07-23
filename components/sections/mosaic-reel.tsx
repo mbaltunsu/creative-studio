@@ -65,6 +65,9 @@ export function MosaicReel() {
           },
           0,
         )
+          /* the merged "image" is 15 separate layers — scaling them shows
+             hairline seams, so swap in one uncut copy the moment they meet */
+          .set("[data-merged]", { opacity: 1 })
           .to({}, { duration: 0.35 })
           .to(
             frame,
@@ -141,6 +144,15 @@ export function MosaicReel() {
               />
             );
           })}
+          <div
+            data-merged
+            aria-hidden
+            className="absolute inset-0 opacity-0"
+            style={{
+              backgroundImage: `url(${MOSAIC_IMAGE})`,
+              backgroundSize: "100% 100%",
+            }}
+          />
         </div>
 
         <video
